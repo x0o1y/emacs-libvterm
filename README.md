@@ -57,6 +57,63 @@ the editing keybinding you are used to using may not work. For example,
 their shells). This is because keys are sent directly to the shell. We are
 constantly working to improve this.
 
+# Local fork deployment
+
+This fork is installed as a Git checkout in `~/.emacs.d/elpa/vterm` on dev and
+vds. It is added explicitly to `load-path` by `main-init.el`; the checkout is
+not an ELPA package and does not contain `vterm-pkg.el`.
+
+The fork carries two local fixes:
+
+- `vterm-ignore-cursor-shape` can prevent terminal applications from changing
+  the Emacs cursor shape.
+- `vterm-mouse-set-point` clamps stale mouse positions to the current buffer
+  bounds before inspecting the clicked text.
+
+Clone the fork through the configured GitHub SSH helper:
+
+```sh
+export VT_CONN_UUID="$(emacsclient --eval '(getenv "VT_CONN_UUID")' | tr -d '"')"
+export GIT_SSH_COMMAND="$HOME/.local/bin/ssh-git-github"
+git clone git@github.com:x0o1y/emacs-libvterm.git ~/.emacs.d/elpa/vterm
+```
+
+Install the vds build dependencies from its root shell:
+
+```sh
+sudosu
+apt-get install -y cmake libtool libtool-bin
+exit
+```
+
+Install the dev build dependencies with:
+
+```sh
+brew install cmake libtool
+```
+
+Configure and build against the vendored libvterm:
+
+```sh
+cmake --fresh -S ~/.emacs.d/elpa/vterm -B ~/.emacs.d/elpa/vterm/build -DUSE_SYSTEM_LIBVTERM=no
+cmake --build ~/.emacs.d/elpa/vterm/build
+```
+
+Update an existing checkout and rebuild it with:
+
+```sh
+cd ~/.emacs.d/elpa/vterm
+export VT_CONN_UUID="$(emacsclient --eval '(getenv "VT_CONN_UUID")' | tr -d '"')"
+export GIT_SSH_COMMAND="$HOME/.local/bin/ssh-git-github"
+git pull --ff-only
+cmake --fresh -S . -B build -DUSE_SYSTEM_LIBVTERM=no
+cmake --build build
+```
+
+Restart Emacs after building so that it loads the new `vterm.el` and native
+module. The generated `build` directory and `vterm-module.so` are ignored by
+Git.
+
 # Installation
 
 ## Requirements
