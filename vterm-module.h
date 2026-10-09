@@ -117,6 +117,7 @@ typedef struct Term {
   bool disable_underline;
   bool disable_inverse_video;
   bool ignore_blink_cursor;
+  bool ignore_cursor_shape;
 
   char *cmd_buffer;
 

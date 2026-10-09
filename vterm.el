@@ -400,6 +400,11 @@ you can use `M-x blink-cursor-mode` to toggle."
   :type 'boolean
   :group 'vterm)
 
+(defcustom vterm-ignore-cursor-shape nil
+  "When non-nil, ignore application requests to change the cursor shape."
+  :type 'boolean
+  :group 'vterm)
+
 (defcustom vterm-copy-exclude-prompt t
   "When not-nil, the prompt is not included by `vterm-copy-mode-done'."
   :type 'boolean
@@ -780,7 +785,8 @@ Exceptions are defined by `vterm-keymap-exceptions'."
                                   vterm-disable-underline
                                   vterm-disable-inverse-video
                                   vterm-ignore-blink-cursor
-                                  vterm-set-bold-highbright))
+                                  vterm-set-bold-highbright
+                                  vterm-ignore-cursor-shape))
     (setq buffer-read-only t)
     (setq-local scroll-conservatively 101)
     (setq-local scroll-margin 0)
@@ -1251,11 +1257,17 @@ Argument ARG is passed to `yank'"
 (defun vterm-mouse-set-point (event &optional promote-to-region)
   "Move point to the position clicked on with the mouse.
 But when clicking to the unused area below the last prompt,
-move the cursor to the prompt area."
+move the cursor to the prompt area.  Clamp stale event positions
+because terminal redraws may shrink the buffer before this command runs."
   (interactive "e\np")
-  (if (> (count-words (posn-point (event-end event)) (point-max)) 0)
-      (mouse-set-point event promote-to-region)
-    (vterm-reset-cursor-point)))
+  (with-current-buffer (window-buffer (posn-window (event-start event)))
+    (let ((pt (mouse-set-point event promote-to-region)))
+      (if (= (count-words (max (point-min) (min pt (point-max)))
+                          (point-max))
+             0)
+          (vterm-reset-cursor-point)
+        pt))
+    (keyboard-quit)))
 
 (defun vterm-send-string (string &optional paste-p)
   "Send the string STRING to vterm.
