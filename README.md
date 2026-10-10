@@ -63,12 +63,14 @@ This fork is installed as a Git checkout in `~/.emacs.d/elpa/vterm` on dev and
 vds. It is added explicitly to `load-path` by `main-init.el`; the checkout is
 not an ELPA package and does not contain `vterm-pkg.el`.
 
-The fork carries two local fixes:
+The fork carries these local fixes:
 
 - `vterm-ignore-cursor-shape` can prevent terminal applications from changing
   the Emacs cursor shape.
 - `vterm-mouse-set-point` clamps stale mouse positions to the current buffer
   bounds before inspecting the clicked text.
+- Default foreground and background inherit the Emacs theme instead of
+  retaining old colors until the terminal receives input or output.
 
 Clone the fork through the configured GitHub SSH helper:
 

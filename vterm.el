@@ -1763,20 +1763,22 @@ Special INDEX of -1 is used to represent default colors.  ARGS
 may optionally contain `:underline' or `:inverse-video' for cells
 with underline or inverse video attribute.  If ARGS contains
 `:foreground', use foreground color of the respective face
-instead of background."
+instead of background.  Return nil for ordinary default colors so
+existing text follows theme changes without terminal output."
   (let ((foreground    (member :foreground args))
         (underline     (member :underline args))
         (inverse-video (member :inverse-video args)))
-    (funcall (if foreground #'face-foreground #'face-background)
-             (cond
-              ((and (>= index 0) (< index 16))
-               (elt vterm-color-palette index))
-              ((and (= index -1) foreground underline)
-               'vterm-color-underline)
-              ((and (= index -1) (not foreground) inverse-video)
-               'vterm-color-inverse-video)
-              (t 'default))
-             nil 'default)))
+    (when-let* ((face
+                (cond
+                 ((and (>= index 0) (< index 16))
+                  (elt vterm-color-palette index))
+                 ((and (= index -1) foreground underline)
+                  'vterm-color-underline)
+                 ((and (= index -1) (not foreground) inverse-video)
+                  'vterm-color-inverse-video)
+                 (t nil))))
+      (funcall (if foreground #'face-foreground #'face-background)
+               face nil 'default))))
 
 (defun vterm--eval (str)
   "Check if string STR is `vterm-eval-cmds' and execute command.
