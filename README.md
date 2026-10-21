@@ -67,8 +67,6 @@ The fork carries these local fixes:
 
 - `vterm-ignore-cursor-shape` can prevent terminal applications from changing
   the Emacs cursor shape.
-- `vterm-ignore-cursor-visibility` can prevent terminal applications from hiding
-  the Emacs cursor. Set it before creating vterm buffers.
 - `vterm-mouse-set-point` clamps stale mouse positions to the current buffer
   bounds before inspecting the clicked text.
 - Default foreground and background inherit the Emacs theme instead of

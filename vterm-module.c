@@ -740,8 +740,6 @@ static int term_settermprop(VTermProp prop, VTermValue *val, void *user_data) {
   Term *term = (Term *)user_data;
   switch (prop) {
   case VTERM_PROP_CURSORVISIBLE:
-    if (term->ignore_cursor_visibility)
-      break;
     invalidate_terminal(term, term->cursor.row, term->cursor.row + 1);
     term->cursor.cursor_visible = val->boolean;
     term->cursor.cursor_type_changed = true;
@@ -1254,7 +1252,6 @@ emacs_value Fvterm_new(emacs_env *env, ptrdiff_t nargs, emacs_value args[],
   int ignore_blink_cursor = env->is_not_nil(env, args[6]);
   int set_bold_highbright = env->is_not_nil(env, args[7]);
   int ignore_cursor_shape = nargs > 8 && env->is_not_nil(env, args[8]);
-  int ignore_cursor_visibility = nargs > 9 && env->is_not_nil(env, args[9]);
 
   term->vt = vterm_new(rows, cols);
   vterm_set_utf8(term->vt, 1);
@@ -1294,7 +1291,6 @@ emacs_value Fvterm_new(emacs_env *env, ptrdiff_t nargs, emacs_value args[],
   term->disable_inverse_video = disable_inverse_video;
   term->ignore_blink_cursor = ignore_blink_cursor;
   term->ignore_cursor_shape = ignore_cursor_shape;
-  term->ignore_cursor_visibility = ignore_cursor_visibility;
   emacs_value newline = env->make_string(env, "\n", 1);
   for (int i = 0; i < term->height; i++) {
     insert(env, newline);
@@ -1538,7 +1534,7 @@ int emacs_module_init(struct emacs_runtime *ert) {
   // Exported functions
   emacs_value fun;
   fun =
-      env->make_function(env, 4, 10, Fvterm_new, "Allocate a new vterm.", NULL);
+      env->make_function(env, 4, 9, Fvterm_new, "Allocate a new vterm.", NULL);
   bind_function(env, "vterm--new", fun);
 
   fun = env->make_function(env, 1, 5, Fvterm_update,

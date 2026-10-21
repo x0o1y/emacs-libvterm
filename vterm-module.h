@@ -118,7 +118,6 @@ typedef struct Term {
   bool disable_inverse_video;
   bool ignore_blink_cursor;
   bool ignore_cursor_shape;
-  bool ignore_cursor_visibility;
 
   char *cmd_buffer;
 
