@@ -54,5 +54,41 @@
             (should (equal red (get-text-property (1- (point)) 'font-lock-face)))))
       (set-face-attribute 'default nil :foreground fg :background bg))))
 
+(ert-deftest vterm-test-cursor-visibility-default ()
+  "Application cursor visibility remains supported with the old argument list."
+  (with-temp-buffer
+    (setq-local cursor-type 'box)
+    (setq-local vterm--term (vterm--new 4 40 10 nil nil nil nil nil nil))
+    (vterm--write-input vterm--term "\e[?25l")
+    (vterm--redraw vterm--term)
+    (should-not cursor-type)
+    (vterm--write-input vterm--term "\e[?25h")
+    (vterm--redraw vterm--term)
+    (should cursor-type)))
+
+(ert-deftest vterm-test-cursor-visibility-setting ()
+  "Ignoring visibility preserves the Emacs cursor through terminal hide/show."
+  (dolist (ignore '(nil t))
+    (with-temp-buffer
+      (setq-local cursor-type 'bar)
+      (setq-local vterm--term (vterm--new 4 40 10 nil nil nil nil nil t ignore))
+      (vterm--write-input vterm--term "\e[?25l")
+      (vterm--redraw vterm--term)
+      (should (eq cursor-type (when ignore 'bar)))
+      (vterm--write-input vterm--term "\e[?25h")
+      (vterm--redraw vterm--term)
+      (if ignore
+          (should (eq cursor-type 'bar))
+        (should cursor-type)))))
+
+(ert-deftest vterm-test-cursor-shape-and-visibility-independent ()
+  "Ignoring visibility still permits cursor shape changes when configured."
+  (with-temp-buffer
+    (setq-local cursor-type 'box)
+    (setq-local vterm--term (vterm--new 4 40 10 nil nil nil nil nil nil t))
+    (vterm--write-input vterm--term "\e[?25l\e[6 q")
+    (vterm--redraw vterm--term)
+    (should (eq cursor-type 'bar))))
+
 (provide 'vterm-tests)
 ;;; vterm-tests.el ends here
